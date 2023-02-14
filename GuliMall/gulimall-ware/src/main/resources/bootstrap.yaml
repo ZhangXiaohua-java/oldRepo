@@ -1,0 +1,60 @@
+server:
+  port: 11001
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://192.168.10.102:3306/gulimall_wms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT%2B8
+
+  application:
+    name: gulimall-ware
+  cloud:
+    nacos:
+      server-addr: 192.168.10.102:8848
+      username: nacos
+      password: nacos
+      config:
+        namespace: 4c2d7013-05c4-4037-8aa4-0cfa8d964c64
+        group: JAVA_GROUP
+        file-extension: yaml
+  #      discovery:
+  #        ip: 192.168.1.2
+  #        port: 11001
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  rabbitmq:
+    host: 192.168.10.102
+    username: guest
+    password: guest
+    listener:
+      simple:
+        acknowledge-mode: manual
+      direct:
+        acknowledge-mode: manual
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+#seata:
+#  enabled: true
+#  application-id: ${spring.application.name}-seata
+#  enable-auto-data-source-proxy: true
+#  tx-service-group: order_group
+#  registry:
+#    nacos:
+#      application: seata-server
+#      server-addr: 192.168.1.9:8848
+#      group: SEATA_GROUP
+#      username: nacos
+#      password: nacos
+#      namespace:
+#  service:
+#    vgroup-mapping:
+#      order_group: default
+#    disable-global-transaction: false
+#    grouplist:
+#      default: 192.168.1.9:8091

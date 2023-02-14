@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>员工信息查询</title>
+    <script src="static/js/jquery-3.4.1.min.js" type="text/javascript"></script>
+    <script src="static/bootstrap-3.4.1/dist/js/bootstrap.js" type="text/javascript"></script>
+    <link href="static/bootstrap-3.4.1/dist/css/bootstrap.css" rel="stylesheet"/>
+    <link href="static/css/empList.css" rel="stylesheet">
+    <script type="text/javascript">
+        $(function(){
+            updateData();
+            
+          function updateData() {
+              var  pageNum  = 1;
+              $.get({
+                  url:"/emp",
+                  data:{"pageNum":pageNum},
+                  success:function (data) {
+                        $("#dataBody").empty();
+                        $.each(data.list,function (index,element) {
+                            $("#dataBody").append(
+                                " <div class=\"col-md-2\">"+"<td>"+element.id+"</td>"
+                                +"<td>"+element.empName+"</td>"
+                                +"<td>"+element.empAge+"</td>"
+                                +"<td>"+element.empGender+"</td>"
+                                +"<td>"+element.dept.deptName+"</td>"+"</div>"
+                            )
+                        })
+                  }
+              })
+          }
+          
+          
+            
+        })
+        
+    </script>
+</head>
+<body>
+
+
+<div class="row"><h1 id="t1">员工信息列表</h1></div>
+
+<div class="row">
+    <div class="col-md-2-offset-10"><button class="btn btn-default small">添加</button></div>
+    <div class="col-md-2-offset-12"><button class="btn btn-danger small">删除</button></div>
+</div>
+<div class="row">
+    <div class="col-md-2">员工编号</div>
+    <div class="col-md-2">员工姓名</div>
+    <div class="col-md-2">员工年龄</div>
+    <div class="col-md-2">员工性别</div>
+    <div class="col-md-2">员工部门</div>
+    <div class="col-md-2"></div>
+</div>
+<div class="row">
+    <table class="table table-hover">
+        <tr id="dataBody">
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>订单详情</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+<div class="panel panel-default">
+    <div class="panel-heading">秒杀订单详情</div>
+    <table class="table" id="order">
+        <tr>
+            <td>商品名称</td>
+            <td id="goodsName" colspan="3"></td>
+        </tr>
+        <tr>
+            <td>商品图片</td>
+            <td colspan="2"><img id="photo" src="" width="200" height="200" /></td>
+        </tr>
+        <tr>
+            <td>订单价格</td>
+            <td colspan="2" id="pay"></td>
+        </tr>
+        <tr>
+            <td>下单时间</td>
+            <td  colspan="2" id="orderTime"></td>
+        </tr>
+        <tr>
+            <td>订单状态</td>
+            <font color="blue"><td id="status"></td></font>
+            <td>
+                <button class="btn btn-primary btn-block" type="submit"
+                        id="payButton">立即支付</button>
+            </td>
+        </tr>
+        <tr>
+            <td>收货人</td>
+            <td colspan="2">XXX 18012345678</td>
+        </tr><tr>
+        <td>收货地址</td>
+        <td colspan="2">上海市浦东区世纪大道</td>
+    </tr>
+    </table>
+</div>
+</body>
+</html>
+<script !src="" type="text/javascript">
+    var id;
+    $(function () {
+        getId();
+
+    })
+
+    function doSpike() {
+        $.ajax({
+            url: "/goods/order/" + id,
+            type:"get",
+            success:function (data) {
+                if (data.code == 200) {
+                    render(data);
+                } else {
+                    layer.msg("每位用户仅限抢购一件商品");
+                }
+            }
+        })
+    }
+
+    function getId() {
+        let add = window.location.href;
+        var i = add.lastIndexOf("?");
+        id = add.substring(i+1);
+        doSpike();
+    }
+    
+    function render(data) {
+        $("#goodsName").text(data.resultMap.order.goodsName);
+        $("#photo").attr("src", data.resultMap.order.imgAddress);
+        $("#pay").text(data.resultMap.order.payMoney);
+        $("#orderTime").text(new Date(data.resultMap.order.createTime).format("yyyy-MM-dd HH:mm:ss"));
+        let sta = "";
+        let arr = ["待发货", "已发货", "已收货", "已退款", "已完成"];
+        switch (data.resultMap.order.status) {
+            case 0 :
+                sta = arr[0];
+                break;
+            case 1 :
+                sta = arr[1];
+                break;
+            case 2 :
+                sta = arr[2];
+                break;
+            case 3 :
+                sta = arr[3];
+                break;
+            case 4 :
+                sta = arr[4];
+                break;
+        }
+        $("#status").text(sta);
+    }
+    
+</script>

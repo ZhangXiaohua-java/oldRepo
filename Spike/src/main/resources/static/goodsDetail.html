@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>商品详情</title>
+  <!-- jquery -->
+  <script type="text/javascript" src="/js/jquery.min.js"></script>
+  <!-- bootstrap -->
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css"/>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.min.js">
+  </script>
+  <!-- layer -->
+  <script type="text/javascript" src="/layer/layer.js"></script>
+  <!-- common.js -->
+  <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+<div class="panel panel-default">
+  <div class="panel-heading">秒杀商品详情</div>
+  <div class="panel-body">
+<!--    <span if="${session.user eq null}"> 您还没有登录，请登陆后再操作<br/></span>-->
+    <span>没有收货地址的提示。。。</span>
+  </div>
+  <table class="table" id="goods">
+    <tr>
+      <td>商品名称</td>
+      <td colspan="3" id="goodsName"></td>
+    </tr>
+    <tr>
+      <td>商品图片</td>
+      <td colspan="3"><img id="photo" src="" width="200" height="200"/></td>
+    </tr>
+    <tr class="form-inline">
+      <td >秒杀开始时间</td>
+      <td id="startTime"></td>
+      <input id="flag" value="" type="hidden" flag=""/>
+      <td><img id="codeImg" src="" width="130px" height="48px" style="display: none" /></td>
+      <td><input id="codeTxt" type="text" class="form-control" style="display: none"></td>
+      <td id="spikeTip"></td>
+    </tr>
+    <tr>
+      <td>商品原价</td>
+      <td colspan="3" id="originPrice"></td>
+    </tr>
+    <tr>
+      <td>秒杀价</td>
+      <td colspan="3" id="price"></td>
+    </tr>
+    <tr>
+      <td>库存数量</td>
+      <td colspan="3" id="stock"></td>
+    </tr>
+  </table>
+</div>
+</body>
+<script>
+  var id;
+  var path = "";
+
+  $(function () {
+    getID();
+   getData();
+   spike();
+  })
+
+  function count() {
+      let  flag = $("#flag").attr("flag");
+      let time = $("#flag").val();
+      let timeCounter;
+      if (time > 0 && flag ==-1 ) {
+         timeCounter = setInterval(function() {
+           time = time - 1;
+           if (time == 0 ){
+             clearInterval(timeCounter);
+             window.location.href = "";
+           }
+           $("#spikeTip").html("<font color='blue'>距离秒杀开始还有" + time + "秒</font>");
+         } , 1000);
+      } else if (flag == 1) {
+        $("#spikeTip").text("秒杀已结束");
+      } else if (flag == 0){
+          $("#codeImg").show();
+          $("#codeTxt").show();
+          let form = "<button id='spikeBtn' class='btn btn-block btn-primary'>立即秒杀</button>";
+          $("#spikeTip").html(form);
+      }
+
+  }
+
+  function getID() {
+    let add = window.location.href;
+    let i = add.lastIndexOf("?");
+    id = add.substring(i+1);
+  }
+
+  function getData() {
+      $.ajax({
+        url:"/goods/detail/"+id,
+        type:"get",
+        success:function (data) {
+            if (data.code==200) {
+                render(data.resultMap);
+                count();
+            } else {
+              layer.msg("服务忙,请稍候再试")
+            }
+        }
+
+      })
+  }
+
+  function render(data) {
+    $("#goodsName").text(data.goods.goodsName);
+    $("#photo").attr("src", data.goods.imgAddress);
+    $("#startTime").text(new Date(data.goods.startTime).format("yyyy-MM-dd HH:mm:ss"));
+    $("#originPrice").text(data.goods.originPrice);
+    $("#price").text(data.goods.price);
+    $("#stock").text(data.goods.stock);
+    $("#flag").val(data.time);
+    $("#flag").attr("flag", data.flag);
+    $("#codeImg").attr("src", "/verify/captcha/?gid=" + id);
+    $("#codeImg").click(function () {
+        $(this).attr("src","/verify/captcha/?gid=" + id +"&date" + new Date().getTime())
+    })
+  }
+
+  function spike() {
+      $("#spikeTip").on("click", "#spikeBtn", function () {
+            getPath();
+            if (!path) {
+              return;
+            }
+            let url = "/goods/spike/"+ path +"/" + id;
+            $.ajax({
+              url: url,
+              type: "post",
+              success:function (data) {
+                  if (data.code == 200) {
+                        // ajax轮询请求
+                      setTimeout(polling, 50);
+                  } else if (data.code == 50003 && data.resultMap.status == 2){
+                      layer.msg(data.message+ ", 三秒后自动跳转到订单页");
+                      setTimeout(function () {
+                        window.location.href = "/orderDeatil.html?"+id;
+                      }, 3000);
+                  } else {
+                    layer.msg(data.message);
+                  }
+              }
+            })
+      })
+  }
+
+  function polling() {
+      $.ajax({
+        url: "/goods/order/result",
+        type: "get",
+        data:{id:id},
+        success:function (data) {
+              if (data.code == 200) {
+                layer.confirm("恭喜你秒杀成功,查看订单?",{btn:["确定", "取消"]},function () {
+                  window.location.href = "/orderDeatil.html?"+id;
+                }, function () {
+                  layer.close();
+                } )
+              } else if (data.code == 201) {
+                if (data.resultMap.status == -1) {
+                    layer.msg("秒杀失败");
+                } else {
+                  setTimeout(polling,50);
+                }
+              }
+        }
+      })
+  }
+
+  function getPath() {
+    let code = $("#codeTxt").val();
+    if (!code) {
+      layer.msg("验证码不允许为空");
+      return;
+    }
+    $.ajax({
+      url: "/goods/path",
+      type:"get",
+      async:false,
+      data: {
+          gid:id,
+          code:code
+      },
+      success:function (data) {
+          if (data.code == 200) {
+              path = data.resultMap.path;
+              console.log(path);
+          } else {
+            layer.msg(data.message);
+          }
+      }
+    })
+  }
+
+</script>
+</html>

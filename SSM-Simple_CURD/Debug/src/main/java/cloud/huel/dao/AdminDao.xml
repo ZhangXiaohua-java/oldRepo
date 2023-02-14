@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cloud.huel.dao.AdminDao">
+
+<!--    Admin loginCheck(Admin admin);-->
+    <select id="loginCheck" parameterType="admin" resultType="admin">
+        select  id, user_name, password, status
+            from tests.t_admin
+            where user_name = #{username} and password = #{password}
+    </select>
+</mapper>

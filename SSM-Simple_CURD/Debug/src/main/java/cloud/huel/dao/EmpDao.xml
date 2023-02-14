@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cloud.huel.dao.EmpDao">
+<!--    List<Emp> queryPartOfEmpList();-->
+<!--    <cache />-->
+    <resultMap id="partOfEmpMap" type="emp">
+        <id column="id" property="id" />
+        <result column="emp_name" property="empName"/>
+        <result column="emp_age" property="empAge" />
+        <result column="emp_gender" property="empGender"/>
+        <association property="dept" column="did" javaType="dept">
+            <id column="dept_id" property="deptId" />
+            <result column="dept_name" property="deptName"/>
+        </association>
+    </resultMap>
+    <select id="queryPartOfEmpList"  resultMap="partOfEmpMap">
+        select e.id, emp_name, emp_age, emp_gender,d.dept_id, dept_name
+        from tests.t_emp as e
+        inner join tests.t_dept as d
+        on e.did  = d.dept_id
+        order by id
+    </select>
+<!--    Integer addEmp(Emp emp);-->
+    <insert id="addEmp" parameterType="emp">
+        insert into tests.t_emp (id, emp_name, emp_age, emp_gender, did) values
+        (null,#{empName},#{empAge},#{empGender},#{did})
+    </insert>
+
+<!--    Integer checkEmpNameExists(@Param("empName") String empName);-->
+
+    <select id="checkEmpNameExists"
+            parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(id)
+        from tests.t_emp
+        where emp_name = #{empName};
+    </select>
+
+<!--    Emp queryEmpById(Integer id);-->
+    <resultMap id="querySingleEmpMap" type="emp">
+        <id column="id" property="id" />
+        <result column="emp_name" property="empName" />
+        <result column="emp_age" property="empAge" />
+        <result column="emp_gender" property="empGender" />
+        <association column="did" property="dept" javaType="dept">
+            <id column="dept_id" property="deptId" />
+            <result column="dept_name" property="deptName" />
+        </association>
+    </resultMap>
+
+    <select id="queryEmpById" resultMap="querySingleEmpMap" parameterType="int">
+        select e.id, emp_name, emp_age, emp_gender,d.dept_id, dept_name
+        from tests.t_emp as e
+                 inner join tests.t_dept as d
+                            on e.did = d.dept_id
+        where id = #{id}
+    </select>
+<!--    Integer updateEmp(Emp emp);-->
+
+    <update id="updateEmp" parameterType="emp">
+        update tests.t_emp
+        <trim prefix="set" prefixOverrides="," suffixOverrides="," >
+            <if test="empAge != null">
+                emp_age = #{empAge},
+            </if>
+            <if test="empGender != null and empGender != '' ">
+                emp_gender = #{empGender},
+            </if>
+            <if test="did != null and did != 0">
+                did = #{did},
+            </if>
+        </trim>
+        where id = #{id}
+
+    </update>
+
+<!--    Integer deleteEmp(Integer [] ids);-->
+<delete id="deleteEmp">
+    delete from tests.t_emp
+    where id in
+    <foreach collection="array" item="id"
+             separator="," open="(" close=")" >
+        #{id}
+    </foreach>
+
+</delete>
+
+</mapper>

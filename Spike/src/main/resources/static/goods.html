@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="UTF-8">
+    <title>商品列表</title>
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css"
+          href="bootstrap/css/bootstrap.min.css"/>
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js">
+    </script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+<div class="panel panel-default">
+<div class="panel-heading">秒杀商品列表</div>
+<table class="table" id="goodslist">
+    <tr>
+        <td>商品名称</td>
+        <td>商品图片</td>
+        <td>商品原价</td>
+        <td>秒杀价</td>
+        <td>库存数量</td>
+        <td>详情</td>
+    </tr>
+    <tbody id="goodsBody">
+
+    </tbody>
+</table>
+</div>
+</body>
+</html>
+
+<script !src="">
+   $(function () {
+       getData();
+   })
+
+   function getData() {
+        $.ajax({
+            url: "/goods/list",
+            type: "get",
+            contentType: "application/json",
+            success: function (data) {
+                if (data.code == 200) {
+                    var bodyContent = "";
+                    $.each(data.resultMap.goods,function (index, ele) {
+                        bodyContent += "<tr><td>"+ ele.goodsName + "</td>";
+                        bodyContent += " <td><img src='"+ ele.imgAddress + "'width=\"100\" height=\"100\"/> </td>";
+                        bodyContent += "<td>"+ ele.originPrice + "</td>";
+                        bodyContent += "<td>" +  ele.price +"</td>";
+                        bodyContent += "<td>"+ ele.stock +"</td>";
+                        bodyContent += "<td><a href='/goodsDetail.html?"+ele.id+"'>详情</a></td> </tr>";
+                    })
+                    $("#goodsBody").html(bodyContent);
+
+                } else {
+                    layer.msg("error")
+                }
+            }
+        })
+
+   }
+</script>
